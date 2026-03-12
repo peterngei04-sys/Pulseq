@@ -983,3 +983,29 @@ cursor:pointer;
   color: #94a3b8;
   margin-top: 4px;
 }
+/* Modern search bar with PulseQ logo + magnifying glass */
+.search-bar input {
+  background: 
+    url('/pulseqsmall.png') no-repeat 10px center,   /* PulseQ logo */
+    url('/search-icon.png') no-repeat right 10px center; /* Magnifying glass */
+  background-size: 20px 20px, 16px 16px; /* sizes for logo and icon */
+  padding-left: 40px;  /* space for typing text after logo */
+  padding-right: 30px; /* space so text doesn't overlap magnifying glass */
+  border-radius: 20px; /* rounded input for modern look */
+  border: none;
+  height: 36px;
+  font-size: 14px;
+  color: white;
+  background-color: #25307a; /* PulseQ theme color */
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.search-bar input::placeholder {
+  color: #bbb; /* placeholder color */
+}
+
+.search-bar input:focus {
+  outline: none;
+  background-color: #3040a0; /* slightly lighter on focus */
+  box-shadow: 0 0 8px rgba(74, 108, 255, 0.5); /* subtle glow */
+}

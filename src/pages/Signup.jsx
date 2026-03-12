@@ -119,9 +119,6 @@ const handleSignup = async (e) => {
       </form>
 
 
-      <button className="google-btn" onClick={handleGoogleSignup}>
-        Sign up with Google
-      </button>
 
 
       {message && <p className="message">{message}</p>}
@@ -168,12 +165,6 @@ const handleSignup = async (e) => {
       </p>
 
 
-      <p>
-        Or{" "}
-        <span className="link" onClick={() => navigate("/feed")}>
-          Continue as Guest
-        </span>
-      </p>
 
     </div>
   );
