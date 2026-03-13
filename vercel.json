@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/((?!assets|favicon.ico|pulseqsmall.png|pulseqlarge.png).*)",
+      "destination": "/index.html"
+    }
+  ]
+}
