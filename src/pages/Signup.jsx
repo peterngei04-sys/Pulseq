@@ -17,14 +17,13 @@ export default function Signup() {
   const navigate = useNavigate();
 
 
-const handleSignup = async (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
 
     try {
-      // Pass username and gender in the 'data' object. 
-      // This goes into NEW.raw_user_meta_data in Postgres.
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -42,14 +41,16 @@ const handleSignup = async (e) => {
         return;
       }
 
-      // You NO LONGER need the .from("profiles").update() here!
-      // The SQL trigger handles everything using the data above.
-
-      setVerifyCard(true);
+      // Clear fields
       setEmail("");
       setPassword("");
       setUsername("");
       setGender("male");
+
+      // Since email confirmation is disabled, redirect user directly
+      if (data?.user) {
+        navigate("/feed");
+      }
 
     } catch (err) {
       console.error(err);
@@ -58,6 +59,7 @@ const handleSignup = async (e) => {
 
     setLoading(false);
   };
+
 
   const handleGoogleSignup = async () => {
 
@@ -118,11 +120,7 @@ const handleSignup = async (e) => {
 
       </form>
 
-
-
-
       {message && <p className="message">{message}</p>}
-
 
       {verifyCard && (
         <div className="verify-card">
@@ -156,15 +154,12 @@ const handleSignup = async (e) => {
         </div>
       )}
 
-
       <p>
         Already have an account?{" "}
         <span className="link" onClick={() => navigate("/login")}>
           Login
         </span>
       </p>
-
-
 
     </div>
   );
