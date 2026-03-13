@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 import { useNavigate } from "react-router-dom";
 
@@ -15,6 +15,19 @@ export default function Signup() {
   const [verifyCard, setVerifyCard] = useState(false);
 
   const navigate = useNavigate();
+
+  // Prevent logged-in users from seeing signup
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+
+      if (data.session) {
+        navigate("/feed", { replace: true });
+      }
+    };
+
+    checkSession();
+  }, [navigate]);
 
 
   const handleSignup = async (e) => {
@@ -47,9 +60,13 @@ export default function Signup() {
       setUsername("");
       setGender("male");
 
-      // Since email confirmation is disabled, redirect user directly
-      if (data?.user) {
-        navigate("/feed");
+      // Wait for session to be ready
+      const { data: sessionData } = await supabase.auth.getSession();
+
+      if (sessionData.session) {
+        navigate("/feed", { replace: true });
+      } else {
+        navigate("/login", { replace: true });
       }
 
     } catch (err) {
@@ -120,39 +137,6 @@ export default function Signup() {
 
       </form>
 
-      {message && <p className="message">{message}</p>}
-
-      {verifyCard && (
-        <div className="verify-card">
-
-          <h3>📧 Verify Your Email</h3>
-
-          <p>
-            Your account has been created successfully.
-          </p>
-
-          <p>
-            Please check your email inbox and click the verification link to activate your PulseQ account.
-          </p>
-
-          <p>
-            If you don't see the email, check your <strong>Spam</strong> or <strong>Junk</strong> folder.
-          </p>
-
-          <p>
-            Need help? Contact support at:
-          </p>
-
-          <p className="support">
-            socialpulsesupport@gmail.com
-          </p>
-
-          <button onClick={() => navigate("/login")}>
-            Go to Login
-          </button>
-
-        </div>
-      )}
 
       <p>
         Already have an account?{" "}
