@@ -320,42 +320,8 @@ const submitReply = async (commentId, postId) => {
 
   showToast("Reply added");
 };
-/* ===============================
-REPLY NOTIFICATION
-================================ */
 
-if(replyTo){
 
-const { data: parent } = await supabase
-.from("comments")
-.select("user_id")
-.eq("id", replyTo)
-.single();
-
-if(parent && parent.user_id !== session.user.id){
-
-await supabase
-.from("notifications")
-.insert({
-user_id: parent.user_id,
-actor_id: session.user.id,
-post_id: postId,
-type: "reply",
-message: "Someone replied to your comment"
-});
-
-}
-
-}
-showToast("Upvoted");
-
-}else{
-
-showToast("Already voted");
-
-}
-  
-};
 const sharePost = (post) => {
   const shareText = `🔥 Join the discussion on PulseQ
 
