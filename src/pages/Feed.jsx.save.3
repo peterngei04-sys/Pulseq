@@ -240,89 +240,52 @@ fetchPosts();
 /* ===============================
 VOTE
 ================================ */
-const handleVote = async (postId) => {
-  if (!session) return;
 
-  // Instant UI update
-  setPosts(prev =>
-    prev.map(post =>
-      post.id === postId
-        ? { ...post, upvotes: (post.upvotes || 0) + 1 }
-        : post
-    )
-  );
+const handleVote = async(postId)=>{
 
-  const { error } = await supabase
-    .from("votes")
-    .insert({ post_id: postId, user_id: session.user.id });
+if(!session) return;
 
-  if (!error) {
-    const { data: postOwner } = await supabase
-      .from("posts")
-      .select("user_id")
-      .eq("id", postId)
-      .single();
+/* instant UI vote update */
+setPosts(prev =>
+prev.map(post =>
+post.id === postId
+? { ...post, upvotes: (post.upvotes || 0) + 1 }
+: post
+)
+);
 
-    if (postOwner && postOwner.user_id !== session.user.id) {
-      await supabase
-        .from("notifications")
-        .insert({
-          user_id: postOwner.user_id,
-          actor_id: session.user.id,
-          post_id: postId,
-          type: "vote",
-          message: "Someone upvoted your post"
-        });
-    }
-    showToast("Upvoted");
-  } else {
-    showToast("Already voted");
-  }
-};
+const { error } = await supabase
+.from("votes")
+.insert({
+post_id:postId,
+user_id:session.user.id
+});
 
-// ===============================
-// SUBMIT REPLY
-// ===============================
-const submitReply = async (commentId, postId) => {
-  if (!replyText.trim() || !session) return;
+if(!error){
 
-  // Insert reply in comments table
-  await supabase
-    .from("comments")
-    .insert({
-      post_id: postId,
-      user_id: session.user.id,
-      content: replyText,
-      parent_id: commentId
-    });
+/* GET POST OWNER */
+const { data: postOwner } = await supabase
+.from("posts")
+.select("user_id")
+.eq("id", postId)
+.single();
 
-  // Clear reply input
-  setReplyText("");
-  setReplyTo(null);
+/* CREATE NOTIFICATION */
+if(postOwner && postOwner.user_id !== session.user.id){
 
-  // Fetch updated comments for this post
-  await fetchComments(postId);
+await supabase
+.from("notifications")
+.insert({
+user_id: postOwner.user_id,
+actor_id: session.user.id,
+post_id: postId,
+type: "vote",
+message: "Someone upvoted your post"
+});
 
-  // Optional notification can be handled here
-  const { data: parent } = await supabase
-    .from("comments")
-    .select("user_id")
-    .eq("id", commentId)
-    .single();
+}
 
-  if (parent && parent.user_id !== session.user.id) {
-    await supabase
-      .from("notifications")
-      .insert({
-        user_id: parent.user_id,
-        actor_id: session.user.id,
-        post_id: postId,
-        type: "reply",
-        message: "Someone replied to your comment"
-      });
-  }
 
-  showToast("Reply added");
 };
 /* ===============================
 REPLY NOTIFICATION
@@ -660,35 +623,47 @@ onClick={()=>handleDeletePost(post.id)}
 {activePost === post.id &&(
 
 <div className="comment-drawer">
-{comments[post.id]?.map(c => (
-  <div key={c.id} className="comment-item" style={{ marginLeft: c.parent_id ? "25px" : "0" }}>
-    <strong>{c.username}</strong>
-    <p>{c.content}</p>
+{comments[post.id]?.map(c=>(
+                                                          
+<div
+key={c.id}
+className="comment-item"
+style={{marginLeft: c.parent_id ? "25px" : "0"}}
+>
 
-    <button onClick={() => setReplyTo(c.id)} className="reply-btn">
-      Reply
-    </button>
+<strong>{c.username}</strong>
 
-    {replyTo === c.id && (
-      <div className="reply-box">
-        <textarea
-          value={replyText}
-          onChange={(e) => setReplyText(e.target.value)}
-          placeholder="Write a reply..."
-        />
+<p>{c.content}</p>
+<button
+onClick={() => setReplyTo(comment.id)}
+className="reply-btn"
+>
+Reply
+</button>
+{replyTo === comment.id && (
 
-        <button onClick={() => submitReply(c.id, post.id)}>
-          Post Reply
-        </button>
+<div className="reply-box">
 
-        <button onClick={() => setReplyTo(null)}>
-          Cancel
-        </button>
-      </div>
-    )}
-  </div>
+<textarea
+value={replyText}
+onChange={(e)=>setReplyText(e.target.value)}
+placeholder="Write a reply..."
+/>
+
+<button onClick={()=>submitReply(comment.id)}>
+Post Reply
+</button>
+
+<button onClick={()=>setReplyTo(null)}>
+Cancel
+</button>
+
+</div>
+
+)}
+</div>
+
 ))}
-
 <div className="comment-input">
 
 <input
