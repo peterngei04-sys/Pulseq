@@ -106,10 +106,10 @@ export default function Notifications() {
             onClick={() => n.post_id && navigate(`/post/${n.post_id}`)}
           >
             <strong>{n.profiles?.username || "User"}</strong>{" "}
-            {n.type === "follow" && <span>started following you</span>}
-            {n.type === "upvote" && <span>upvoted your post</span>}
-            {n.type === "comment" && <span>commented: {n.message}</span>}
-
+             {n.type === "comment" && <span>commented on your post</span>}
+{n.type === "reply" && <span>replied to your comment</span>}
+{n.type === "upvote" && <span>upvoted your post</span>}
+{n.type === "follow" && <span>started following you</span>}
             <span className="notification-time">{timeAgo(n.created_at)}</span>
           </div>
         ))

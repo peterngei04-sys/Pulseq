@@ -18,12 +18,15 @@ const [activePost, setActivePost] = useState(null);
 
 const [comments, setComments] = useState({});
 const [newComment, setNewComment] = useState("");
+const [replyTo, setReplyTo] = useState(null);
+const [replyText, setReplyText] = useState("");
 
 const [newTitle, setNewTitle] = useState("");
 const [newBody, setNewBody] = useState("");
 
 const [search, setSearch] = useState("");
 const [toast, setToast] = useState(null);
+
 
 
 /* ===============================
@@ -281,7 +284,50 @@ message: "Someone upvoted your post"
 });
 
 }
+const submitReply = async (commentId) => {
 
+if(!replyText.trim()) return;
+
+await supabase
+.from("comments")
+.insert({
+post_id: post.id,
+user_id: session.user.id,
+content: replyText,
+parent_id: commentId
+});
+
+setReplyText("");
+setReplyTo(null);
+
+};
+/* ===============================
+REPLY NOTIFICATION
+================================ */
+
+if(replyTo){
+
+const { data: parent } = await supabase
+.from("comments")
+.select("user_id")
+.eq("id", replyTo)
+.single();
+
+if(parent && parent.user_id !== session.user.id){
+
+await supabase
+.from("notifications")
+.insert({
+user_id: parent.user_id,
+actor_id: session.user.id,
+post_id: postId,
+type: "reply",
+message: "Someone replied to your comment"
+});
+
+}
+
+}
 showToast("Upvoted");
 
 }else{
@@ -289,6 +335,59 @@ showToast("Upvoted");
 showToast("Already voted");
 
 }
+  
+};
+const sharePost = (post) => {
+  const shareText = `🔥 Join the discussion on PulseQ
+
+${post.title}
+
+https://pulseq-blue.vercel.app/post/${post.id}
+
+Join the community 🚀`;
+
+  navigator.clipboard.writeText(shareText);
+  showToast("Share message copied!"); // optional toast instead of alert
+};
+/* ===============================
+SHARE POST
+================================ */
+
+const handleShare = async (post) => {
+
+  const link = `${window.location.origin}/post/${post.id}`;
+
+  const message =
+`🔥 I just discovered this interesting discussion on PulseQ!
+
+"${post.title}"
+
+Join the conversation and share your thoughts.
+
+👉 ${link}
+
+PulseQ – Where real conversations happen.`;
+
+  try {
+
+    if (navigator.share) {
+
+      await navigator.share({
+        title: post.title,
+        text: message,
+        url: link
+      });
+
+    } else {
+
+      await navigator.clipboard.writeText(message);
+      showToast("Share message copied");
+
+    }
+
+  } catch (err) {
+    console.log(err);
+  }
 
 };
 /* ===============================
@@ -302,6 +401,7 @@ const { data } = await supabase
 .select(`
 id,
 content,
+parent_id,
 profiles(username)
 `)
 .eq("post_id",postId)
@@ -318,7 +418,6 @@ setComments(prev=>({
 }));
 
 };
-
 
 /* ===============================
 ADD COMMENT
@@ -342,9 +441,9 @@ await supabase
 .insert({
 post_id:postId,
 user_id:session.user.id,
-content:newComment
+content:newComment,
+parent_id: replyTo
 });
-
 /* get post owner */
 const { data: postOwner } = await supabase
 .from("posts")
@@ -368,7 +467,7 @@ message: "Someone commented on your post"
 }
 
 setNewComment("");
-
+setReplyTo(null);
 await fetchComments(postId);
 
 showToast("Comment added");
@@ -515,7 +614,12 @@ fetchComments(post.id);
 >
 💬 {post.comment_count || 0}
 </button>
-
+<button
+className="action-btn"
+onClick={()=>handleShare(post)}
+>
+📤
+</button>
 {session?.user?.id === post.user_id &&(
 
 <button
@@ -533,22 +637,47 @@ onClick={()=>handleDeletePost(post.id)}
 {activePost === post.id &&(
 
 <div className="comment-drawer">
-
 {comments[post.id]?.map(c=>(
-
+                                                          
 <div
 key={c.id}
 className="comment-item"
+style={{marginLeft: c.parent_id ? "25px" : "0"}}
 >
 
 <strong>{c.username}</strong>
 
 <p>{c.content}</p>
+<button
+onClick={() => setReplyTo(comment.id)}
+className="reply-btn"
+>
+Reply
+</button>
+{replyTo === comment.id && (
+
+<div className="reply-box">
+
+<textarea
+value={replyText}
+onChange={(e)=>setReplyText(e.target.value)}
+placeholder="Write a reply..."
+/>
+
+<button onClick={()=>submitReply(comment.id)}>
+Post Reply
+</button>
+
+<button onClick={()=>setReplyTo(null)}>
+Cancel
+</button>
 
 </div>
 
-))}
+)}
+</div>
 
+))}
 <div className="comment-input">
 
 <input
