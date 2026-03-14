@@ -286,24 +286,23 @@ const handleVote = async (postId) => {
 const submitReply = async (commentId, postId) => {
   if (!replyText.trim() || !session) return;
 
-  // Insert reply in comments table
+  // Insert the reply
   await supabase
     .from("comments")
     .insert({
       post_id: postId,
       user_id: session.user.id,
       content: replyText,
-      parent_id: commentId
+      parent_id: commentId,
     });
 
-  // Clear reply input
   setReplyText("");
   setReplyTo(null);
 
-  // Fetch updated comments for this post
+  // Fetch comments to refresh UI
   await fetchComments(postId);
 
-  // Optional notification can be handled here
+  // Reply notification
   const { data: parent } = await supabase
     .from("comments")
     .select("user_id")
@@ -318,7 +317,7 @@ const submitReply = async (commentId, postId) => {
         actor_id: session.user.id,
         post_id: postId,
         type: "reply",
-        message: "Someone replied to your comment"
+        message: "Someone replied to your comment",
       });
   }
 
@@ -668,24 +667,19 @@ onClick={()=>handleDeletePost(post.id)}
     <button onClick={() => setReplyTo(c.id)} className="reply-btn">
       Reply
     </button>
-
-    {replyTo === c.id && (
-      <div className="reply-box">
-        <textarea
-          value={replyText}
-          onChange={(e) => setReplyText(e.target.value)}
-          placeholder="Write a reply..."
-        />
-
-        <button onClick={() => submitReply(c.id, post.id)}>
-          Post Reply
-        </button>
-
-        <button onClick={() => setReplyTo(null)}>
-          Cancel
-        </button>
-      </div>
-    )}
+     {replyTo === c.id && (
+  <div className="reply-box">
+    <textarea
+      value={replyText}
+      onChange={(e) => setReplyText(e.target.value)}
+      placeholder="Write a reply..."
+    />
+    <button onClick={() => submitReply(c.id, post.id)}>
+      Post Reply
+    </button>
+    <button onClick={() => setReplyTo(null)}>Cancel</button>
+  </div>
+)}
   </div>
 ))}
 
