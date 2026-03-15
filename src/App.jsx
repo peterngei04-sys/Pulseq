@@ -92,16 +92,7 @@ element={
 />
 
 {/* Protected routes */}
-
-<Route
-path="/feed"
-element={
-<ProtectedRoute>
-<Feed />
-</ProtectedRoute>
-}
-/>
-
+<Route path="/feed" element={<Feed />} />
 <Route
 path="/notifications"
 element={
@@ -110,16 +101,7 @@ element={
 </ProtectedRoute>
 }
 />
-
-<Route
-path="/profile/:id"
-element={
-<ProtectedRoute>
-<Profile />
-</ProtectedRoute>
-}
-/>
-
+<Route path="/profile/:id" element={<Profile />} />
 {/* fallback */}
 
 <Route path="*" element={<Navigate to="/" replace />} />

@@ -26,7 +26,7 @@ const [newBody, setNewBody] = useState("");
 
 const [search, setSearch] = useState("");
 const [toast, setToast] = useState(null);
-
+const [isGuest, setIsGuest] = useState(false);
 
 
 /* ===============================
@@ -74,8 +74,14 @@ useEffect(() => {
 
 const loadSession = async () => {
 
-const { data } = await supabase.auth.getSession();
+const guest = localStorage.getItem("guest") === "true";
 
+if (guest) {
+  setIsGuest(true);
+  return;
+}
+
+const { data } = await supabase.auth.getSession();
 const sess = data.session;
 
 setSession(sess);
@@ -93,7 +99,6 @@ setProfile(profileData);
 }
 
 };
-
 loadSession();
 
 },[]);
@@ -172,15 +177,15 @@ fetchPosts();
 /* ===============================
 LOGOUT
 ================================ */
-
 const handleLogout = async () => {
+
+localStorage.removeItem("guest");
 
 await supabase.auth.signOut();
 
 navigate("/login");
 
 };
-
 
 /* ===============================
 CREATE POST
@@ -189,7 +194,13 @@ CREATE POST
 const handleCreatePost = async (e) => {
 
 e.preventDefault();
+if (isGuest) {
+  showToast("Sign up to reply");
+  navigate("/signup");
+  return;
+}
 
+if (!replyText.trim() || !session) return;
 if(!session) return;
 
 const { error } = await supabase
@@ -241,51 +252,91 @@ fetchPosts();
 VOTE
 ================================ */
 const handleVote = async (postId) => {
+if (isGuest) {
+  showToast("Please sign up to vote");
+  navigate("/signup");
+  return;
+}
   if (!session) return;
 
-  // Instant UI update
-  setPosts(prev =>
-    prev.map(post =>
-      post.id === postId
-        ? { ...post, upvotes: (post.upvotes || 0) + 1 }
-        : post
-    )
-  );
+  const userId = session.user.id;
 
-  const { error } = await supabase
+  // Check if vote exists
+  const { data: existingVote } = await supabase
     .from("votes")
-    .insert({ post_id: postId, user_id: session.user.id });
+    .select("id")
+    .eq("post_id", postId)
+    .eq("user_id", userId)
+    .single();
 
-  if (!error) {
+  if (existingVote) {
+
+    // Remove vote
+    await supabase
+      .from("votes")
+      .delete()
+      .eq("post_id", postId)
+      .eq("user_id", userId);
+
+    // Update UI
+    setPosts(prev =>
+      prev.map(post =>
+        post.id === postId
+          ? { ...post, upvotes: Math.max((post.upvotes || 1) - 1, 0) }
+          : post
+      )
+    );
+
+    showToast("Upvote removed");
+
+  } else {
+
+    // Add vote
+    await supabase
+      .from("votes")
+      .insert({ post_id: postId, user_id: userId });
+
+    // Update UI
+    setPosts(prev =>
+      prev.map(post =>
+        post.id === postId
+          ? { ...post, upvotes: (post.upvotes || 0) + 1 }
+          : post
+      )
+    );
+
     const { data: postOwner } = await supabase
       .from("posts")
       .select("user_id")
       .eq("id", postId)
       .single();
 
-    if (postOwner && postOwner.user_id !== session.user.id) {
-      await supabase
-        .from("notifications")
-        .insert({
-          user_id: postOwner.user_id,
-          actor_id: session.user.id,
-          post_id: postId,
-          type: "vote",
-          message: "Someone upvoted your post"
-        });
+    if (postOwner && postOwner.user_id !== userId) {
+
+      await supabase.from("notifications").insert({
+        user_id: postOwner.user_id,
+        actor_id: userId,
+        post_id: postId,
+        type: "vote",
+        message: "Someone upvoted your post"
+      });
+
     }
+
     showToast("Upvoted");
-  } else {
-    showToast("Already voted");
   }
 };
-
 // ===============================
 // SUBMIT REPLY
 // ===============================
 const submitReply = async (commentId, postId) => {
-  if (!replyText.trim() || !session) return;
+if (isGuest) {
+  showToast("Sign up to reply");
+  navigate("/signup");
+  return;
+}
 
+if (!replyText.trim() || !session) return;
   // Insert reply
   await supabase.from("comments").insert({
     post_id: postId,
@@ -409,8 +460,13 @@ ADD COMMENT
 ================================ */
 const handleAddComment = async(postId)=>{
 
-if(!newComment.trim() || !session) return;
+if (isGuest) {
+  showToast("Sign up to comment");
+  navigate("/signup");
+  return;
+}
 
+if(!newComment.trim() || !session) return;
 /* instant comment count */
 setPosts(prev =>
 prev.map(post =>

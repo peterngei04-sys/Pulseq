@@ -180,10 +180,43 @@ export default function Profile() {
   // -------------------------
   // Handle post like/upvote
   // -------------------------
-  const handleVote = async (postId) => {
-    if (!currentUser) return;
+const handleVote = async (postId) => {
+  if (!currentUser) return;
 
-    // Instant UI update
+  // Check if vote already exists
+  const { data: existingVote } = await supabase
+    .from("votes")
+    .select("id")
+    .eq("post_id", postId)
+    .eq("user_id", currentUser.id)
+    .single();
+
+  if (existingVote) {
+
+    // Remove vote
+    await supabase
+      .from("votes")
+      .delete()
+      .eq("post_id", postId)
+      .eq("user_id", currentUser.id);
+
+    // Update UI
+    setPosts(prev =>
+      prev.map(post =>
+        post.id === postId
+          ? { ...post, upvotes_count: Math.max((post.upvotes_count || 1) - 1, 0) }
+          : post
+      )
+    );
+
+  } else {
+
+    // Add vote
+    await supabase
+      .from("votes")
+      .insert({ post_id: postId, user_id: currentUser.id });
+
+    // Update UI
     setPosts(prev =>
       prev.map(post =>
         post.id === postId
@@ -192,11 +225,9 @@ export default function Profile() {
       )
     );
 
-    // Insert vote in DB
-    await supabase.from("votes").insert({ post_id: postId, user_id: currentUser.id });
-
     // Notification
     const postOwner = posts.find(p => p.id === postId)?.user_id;
+
     if (postOwner && postOwner !== currentUser.id) {
       await supabase.from("notifications").insert({
         user_id: postOwner,
@@ -206,8 +237,8 @@ export default function Profile() {
         message: "upvoted your post"
       });
     }
-  };
-
+  }
+};
   if (loading) return <p style={{ textAlign: "center", color: "white" }}>Loading...</p>;
   if (!profile) return <p style={{ textAlign: "center", color: "white" }}>Profile not found</p>;
 

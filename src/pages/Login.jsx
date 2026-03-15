@@ -67,7 +67,15 @@ export default function Login() {
 
       <p>
         Or{" "}
-        <span className="link" onClick={() => navigate("/feed")}>Continue as Guest</span>
+       <span
+  className="link"
+  onClick={() => {
+    localStorage.setItem("guest", "true");
+    navigate("/feed");
+  }}
+>
+  Continue as Guest
+</span>
       </p>
     </div>
   );

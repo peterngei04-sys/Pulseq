@@ -18,12 +18,15 @@ const [activePost, setActivePost] = useState(null);
 
 const [comments, setComments] = useState({});
 const [newComment, setNewComment] = useState("");
+const [replyTo, setReplyTo] = useState(null);
+const [replyText, setReplyText] = useState("");
 
 const [newTitle, setNewTitle] = useState("");
 const [newBody, setNewBody] = useState("");
 
 const [search, setSearch] = useState("");
 const [toast, setToast] = useState(null);
+const [isGuest, setIsGuest] = useState(false);
 
 
 /* ===============================
@@ -67,12 +70,16 @@ setToast(null);
 LOAD SESSION
 ================================ */
 
-useEffect(() => {
-
 const loadSession = async () => {
 
-const { data } = await supabase.auth.getSession();
+const guest = localStorage.getItem("guest") === "true";
 
+if (guest) {
+  setIsGuest(true);
+  return;
+}
+
+const { data } = await supabase.auth.getSession();
 const sess = data.session;
 
 setSession(sess);
@@ -90,7 +97,6 @@ setProfile(profileData);
 }
 
 };
-
 loadSession();
 
 },[]);
@@ -99,7 +105,6 @@ loadSession();
 /* ===============================
 FETCH POSTS
 ================================ */
-
 const fetchPosts = async () => {
 
 setLoading(true);
@@ -115,8 +120,7 @@ user_id,
 profiles(username),
 votes(count),
 comments(count)
-`)
-.order("created_at",{ascending:false});
+`);
 
 if(error){
 console.log(error);
@@ -124,12 +128,37 @@ setLoading(false);
 return;
 }
 
-const formatted = data.map(p => ({
+const formatted = data.map(p => {
+
+const upvotes = p.votes[0]?.count || 0;
+const comments = p.comments[0]?.count || 0;
+
+/* Time decay algorithm */
+const hoursAgo =
+(Math.floor((Date.now() - new Date(p.created_at)) / 1000) / 3600) + 2;
+
+/* Ranking score */
+const score = (upvotes + comments + 2) / hoursAgo;
+
+return{
 ...p,
 username: p.profiles?.username || "User",
-upvotes: p.votes[0]?.count || 0,
-comment_count: p.comments[0]?.count || 0
-}));
+upvotes,
+comment_count: comments,
+score
+};
+
+});
+
+formatted.sort((a,b)=>{
+
+if(b.score === a.score){
+return new Date(b.created_at) - new Date(a.created_at);
+}
+
+return b.score - a.score;
+
+});
 
 setPosts(formatted);
 setLoading(false);
@@ -149,12 +178,13 @@ LOGOUT
 
 const handleLogout = async () => {
 
+localStorage.removeItem("guest");
+
 await supabase.auth.signOut();
 
 navigate("/login");
 
 };
-
 
 /* ===============================
 CREATE POST
@@ -164,8 +194,11 @@ const handleCreatePost = async (e) => {
 
 e.preventDefault();
 
-if(!session) return;
-
+if (isGuest) {
+  showToast("Create an account to post");
+  navigate("/signup");
+  return;
+}
 const { error } = await supabase
 .from("posts")
 .insert({
@@ -214,58 +247,179 @@ fetchPosts();
 /* ===============================
 VOTE
 ================================ */
+const handleVote = async (postId) => {
 
-const handleVote = async(postId)=>{
+if (isGuest) {
+  showToast("Please sign up to vote");
+  navigate("/signup");
+  return;
+}
+if (!session) return;
+  const userId = session.user.id;
 
-if(!session) return;
+  // Check if vote exists
+  const { data: existingVote } = await supabase
+    .from("votes")
+    .select("id")
+    .eq("post_id", postId)
+    .eq("user_id", userId)
+    .single();
 
-/* instant UI vote update */
-setPosts(prev =>
-prev.map(post =>
-post.id === postId
-? { ...post, upvotes: (post.upvotes || 0) + 1 }
-: post
-)
-);
+  if (existingVote) {
 
-const { error } = await supabase
-.from("votes")
-.insert({
-post_id:postId,
-user_id:session.user.id
-});
+    // Remove vote
+    await supabase
+      .from("votes")
+      .delete()
+      .eq("post_id", postId)
+      .eq("user_id", userId);
 
-if(!error){
+    // Update UI
+    setPosts(prev =>
+      prev.map(post =>
+        post.id === postId
+          ? { ...post, upvotes: Math.max((post.upvotes || 1) - 1, 0) }
+          : post
+      )
+    );
 
-/* GET POST OWNER */
-const { data: postOwner } = await supabase
-.from("posts")
-.select("user_id")
-.eq("id", postId)
-.single();
+    showToast("Upvote removed");
 
-/* CREATE NOTIFICATION */
-if(postOwner && postOwner.user_id !== session.user.id){
+  } else {
 
-await supabase
-.from("notifications")
-.insert({
-user_id: postOwner.user_id,
-actor_id: session.user.id,
-post_id: postId,
-type: "vote",
-message: "Someone upvoted your post"
-});
+    // Add vote
+    await supabase
+      .from("votes")
+      .insert({ post_id: postId, user_id: userId });
 
+    // Update UI
+    setPosts(prev =>
+      prev.map(post =>
+        post.id === postId
+          ? { ...post, upvotes: (post.upvotes || 0) + 1 }
+          : post
+      )
+    );
+
+    const { data: postOwner } = await supabase
+      .from("posts")
+      .select("user_id")
+      .eq("id", postId)
+      .single();
+
+    if (postOwner && postOwner.user_id !== userId) {
+
+      await supabase.from("notifications").insert({
+        user_id: postOwner.user_id,
+        actor_id: userId,
+        post_id: postId,
+        type: "vote",
+        message: "Someone upvoted your post"
+      });
+
+    }
+
+    showToast("Upvoted");
+  }
+};
+// ===============================
+// SUBMIT REPLY
+// ===============================
+const submitReply = async (commentId, postId) => {
+if (isGuest) {
+  showToast("Sign up to reply");
+  navigate("/signup");
+  return;
 }
 
-showToast("Upvoted");
+if (!replyText.trim() || !session) return;
+  // Insert reply
+  await supabase.from("comments").insert({
+    post_id: postId,
+    user_id: session.user.id,
+    content: replyText,
+    parent_id: commentId,
+  });
 
-}else{
+  // Clear input
+  setReplyText("");
+  setReplyTo(null);
 
-showToast("Already voted");
+  // Refresh comments for UI
+  await fetchComments(postId);
 
-}
+  // Notify parent comment owner
+  const { data: parent } = await supabase
+    .from("comments")
+    .select("user_id")
+    .eq("id", commentId)
+    .single();
+
+  if (parent && parent.user_id !== session.user.id) {
+    await supabase.from("notifications").insert({
+      user_id: parent.user_id,
+      actor_id: session.user.id,
+      post_id: postId,
+      type: "reply",
+      message: "Someone replied to your comment",
+    });
+  }
+
+  showToast("Reply added");
+};
+
+
+const sharePost = (post) => {
+  const shareText = `🔥 Join the discussion on PulseQ
+
+${post.title}
+
+https://pulseq-blue.vercel.app/post/${post.id}
+
+Join the community 🚀`;
+
+  navigator.clipboard.writeText(shareText);
+  showToast("Share message copied!"); // optional toast instead of alert
+};
+/* ===============================
+SHARE POST
+================================ */
+
+const handleShare = async (post) => {
+
+  const link = `${window.location.origin}/post/${post.id}`;
+
+  const message =
+`🔥 I just discovered this interesting discussion on PulseQ!
+
+"${post.title}"
+
+Join the conversation and share your thoughts.
+
+👉 ${link}
+
+PulseQ – Where real conversations happen.`;
+
+  try {
+
+    if (navigator.share) {
+
+      await navigator.share({
+        title: post.title,
+        text: message,
+        url: link
+      });
+
+    } else {
+
+      await navigator.clipboard.writeText(message);
+      showToast("Share message copied");
+
+    }
+
+  } catch (err) {
+    console.log(err);
+  }
 
 };
 /* ===============================
@@ -279,6 +433,7 @@ const { data } = await supabase
 .select(`
 id,
 content,
+parent_id,
 profiles(username)
 `)
 .eq("post_id",postId)
@@ -296,14 +451,18 @@ setComments(prev=>({
 
 };
 
-
 /* ===============================
 ADD COMMENT
 ================================ */
 const handleAddComment = async(postId)=>{
 
-if(!newComment.trim() || !session) return;
+if (isGuest) {
+  showToast("Sign up to comment");
+  navigate("/signup");
+  return;
+}
 
+if(!newComment.trim() || !session) return;
 /* instant comment count */
 setPosts(prev =>
 prev.map(post =>
@@ -319,9 +478,9 @@ await supabase
 .insert({
 post_id:postId,
 user_id:session.user.id,
-content:newComment
+content:newComment,
+parent_id: replyTo
 });
-
 /* get post owner */
 const { data: postOwner } = await supabase
 .from("posts")
@@ -345,7 +504,7 @@ message: "Someone commented on your post"
 }
 
 setNewComment("");
-
+setReplyTo(null);
 await fetchComments(postId);
 
 showToast("Comment added");
@@ -457,11 +616,15 @@ className="avatar"
 onClick={()=>navigate(`/profile/${post.user_id}`)}
 style={{cursor:"pointer"}}
 >
-{post.username?.charAt(0).toUpperCase()}
+{post.username.charAt(0).toUpperCase()}
 </div>
-
 <span className="username">
 {post.username} • {timeAgo(post.created_at)}
+</span>
+
+</div>
+
+<h3 className="modern-title">
 {post.title}
 </h3>
 
@@ -488,7 +651,12 @@ fetchComments(post.id);
 >
 💬 {post.comment_count || 0}
 </button>
-
+<button
+className="action-btn"
+onClick={()=>handleShare(post)}
+>
+📤
+</button>
 {session?.user?.id === post.user_id &&(
 
 <button
@@ -506,20 +674,28 @@ onClick={()=>handleDeletePost(post.id)}
 {activePost === post.id &&(
 
 <div className="comment-drawer">
+{comments[post.id]?.map(c => (
+  <div key={c.id} className="comment-item" style={{ marginLeft: c.parent_id ? "25px" : "0" }}>
+    <strong>{c.username}</strong>
+    <p>{c.content}</p>
 
-{comments[post.id]?.map(c=>(
-
-<div
-key={c.id}
-className="comment-item"
->
-
-<strong>{c.username}</strong>
-
-<p>{c.content}</p>
-
-</div>
-
+    <button onClick={() => setReplyTo(c.id)} className="reply-btn">
+      Reply
+    </button>
+{replyTo === c.id && (
+  <div className="reply-box">
+    <textarea
+      value={replyText}
+      onChange={(e) => setReplyText(e.target.value)}
+      placeholder="Write a reply..."
+    />
+    <button onClick={() => submitReply(c.id, post.id)}>
+      Post Reply
+    </button>
+    <button onClick={() => setReplyTo(null)}>Cancel</button>
+  </div>
+)}
+  </div>
 ))}
 
 <div className="comment-input">

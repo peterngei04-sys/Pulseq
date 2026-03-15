@@ -136,15 +136,27 @@ export default function Signup() {
         </button>
 
       </form>
+<p>
+  Already have an account?{" "}
+  <span className="link" onClick={() => navigate("/login")}>
+    Login
+  </span>
+</p>
 
+<p>
+  Or{" "}
+  <span
+    className="link"
+    onClick={() => {
+      localStorage.setItem("guest", "true");
+      navigate("/feed");
+    }}
+  >
+    Continue as Guest
+  </span>
+</p>
 
-      <p>
-        Already have an account?{" "}
-        <span className="link" onClick={() => navigate("/login")}>
-          Login
-        </span>
-      </p>
+</div>
 
-    </div>
   );
 }
