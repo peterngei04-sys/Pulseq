@@ -192,43 +192,39 @@ CREATE POST
 ================================ */
 
 const handleCreatePost = async (e) => {
+  e.preventDefault();
 
-e.preventDefault();
-if (isGuest) {
-  showToast("Sign up to reply");
-  navigate("/signup");
-  return;
-}
+  if (!session) {
+    showToast("Please log in to post");
+    navigate("/signup");
+    return;
+  }
 
-if (!replyText.trim() || !session) return;
-if(!session) return;
+  if (!newTitle.trim() || !newBody.trim()) {
+    showToast("Title and body cannot be empty");
+    return;
+  }
 
-const { error } = await supabase
-.from("posts")
-.insert({
-title:newTitle,
-body:newBody,
-user_id:session.user.id
-});
+  const { data, error } = await supabase
+    .from("posts")
+    .insert({
+      title: newTitle,
+      body: newBody,
+      user_id: session.user.id,
+    });
 
-if(error){
+  if (error) {
+    console.log("Post insert error:", error); // 🔍 Inspect this in console
+    showToast("Error creating post");
+    return;
+  }
 
-console.log(error);
-showToast("Error creating post");
-
-}else{
-
-showToast("Post created");
-fetchPosts();
-
-}
-
-setNewTitle("");
-setNewBody("");
-setShowModal(false);
-
+  showToast("Post created!");
+  setNewTitle("");
+  setNewBody("");
+  setShowModal(false);
+  fetchPosts(); // refresh feed
 };
-
 
 /* ===============================
 DELETE POST
