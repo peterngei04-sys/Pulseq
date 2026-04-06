@@ -482,14 +482,31 @@ SHARE POST
 ================================ */
 const handleShare = async (post, e) => {
   if (e) e.stopPropagation();
-  const link = window.location.origin + "/post/" + post.id;
-  const message = "Check this out on PulseQ!\n\n\"" + post.title + "\"\n\n" + link;
-  try {
-    if (navigator.share) { await navigator.share({ title: post.title, text: message, url: link }); }
-    else { await navigator.clipboard.writeText(message); showToast("Share link copied"); }
-  } catch (err) { console.log(err); }
-};
 
+  // 👇 THIS is the magic change
+  const link = window.location.origin + "/api/post/" + post.id;
+
+  const message =
+    "Check this out on PulseQ!\n\n\"" +
+    post.title +
+    "\"\n\n" +
+    link;
+
+  try {
+    if (navigator.share) {
+      await navigator.share({
+        title: post.title,
+        text: message,
+        url: link,
+      });
+    } else {
+      await navigator.clipboard.writeText(link);
+      showToast("Share link copied");
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
 /* ===============================
 SEARCH FILTER
 ================================ */
