@@ -734,7 +734,7 @@ return (
             </div>
 
             <h3 className="modern-title" style={{ padding: "0 0 8px" }}>{detailPost.title}</h3>
-            <ExpandableText text={post.body} />
+            <PostBody body={detailPost.body} />
             {detailPost.image_url && (
               <div className="post-image-wrapper" style={{ margin: "0 -16px" }}>
                 <img src={detailPost.image_url} alt="Post attachment" className="post-image" />
