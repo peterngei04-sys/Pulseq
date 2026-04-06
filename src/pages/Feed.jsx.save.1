@@ -583,44 +583,10 @@ const ActionBar = ({ post, inDetail = false }) => (
     {session && session.user.id === post.user_id && (
       <button className="action-btn" onClick={e => { e.stopPropagation(); handleDeletePost(post.id); }}>🗑</button>
     )}
-  </div>
-);
-
-
-
-
-const PostBody = ({ body }) => {
-  const [expanded, setExpanded] = useState(false);
-  const LIMIT = 180;
-  const isLong = body && body.length > LIMIT;
-
-  return (
-    <p className="modern-body">
-      {isLong && !expanded ? body.slice(0, LIMIT) + "..." : body}
-      {isLong && (
-        <span
-          onClick={e => { e.stopPropagation(); setExpanded(!expanded); }}
-          style={{
-            color: "#a78bfa",
-            fontWeight: 600,
-            cursor: "pointer",
-            marginLeft: "6px",
-            fontSize: "13px"
-          }}
-        >
-          {expanded ? " See less" : " See more"}
-        </span>
-      )}
-    </p>
-  );
-};
-
-/* ===============================
-UI
-================================ */
-return (
-<div className="feed-wrapper">
-
+  </div> ); k}; /* =============================== UI 
+================================ */ return ( <div 
+className="feed-wrapper">
+7
   {/* TOP HEADER */}
   <header className="top-header">
     <h2>PulseQ</h2>
@@ -676,7 +642,7 @@ return (
           </span>
         </div>
         <h3 className="modern-title">{post.title}</h3>
-        <PostBody body={post.body} />  
+        <p className="modern-body">{post.body}</p>
         {post.image_url && (
           <div className="post-image-wrapper">
             <img src={post.image_url} alt="Post attachment" className="post-image" loading="lazy" />
