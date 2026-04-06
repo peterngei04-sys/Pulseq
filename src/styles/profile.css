@@ -1,227 +1,314 @@
 /* =========================
-PROFILE PAGE (MODERN DARK)
+PROFILE PAGE
 ========================= */
+.profile-page {
+  max-width: 650px;
+  margin: 0 auto;
+  color: white;
+  animation: fadeUp .4s ease;
+  padding-bottom: 80px;
+}
 
-.profile-page{
-  max-width:650px;
-  margin:0 auto;
-  padding:16px;
-  color:white;
-  animation:fadeUp .4s ease;
+.profile-loading {
+  text-align: center;
+  color: #6b7280;
+  padding: 60px 20px;
+  font-size: 14px;
 }
 
 /* =========================
-HEADER
+COVER — X-style banner
 ========================= */
-
-.profile-header{
-  text-align:center;
-  margin-bottom:24px;
+.profile-cover {
+  position: relative;
+  height: 130px;
+  background: #0d0d14;
+  overflow: visible;
 }
 
-/* AVATAR (TikTok Style Glow) */
-.profile-avatar{
-  width:100px;
-  height:100px;
-  margin:0 auto;
-  border-radius:50%;
-  background:linear-gradient(135deg,#2563eb,#6366f1);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:40px;
-  font-weight:bold;
-  color:white;
-  box-shadow:0 0 20px rgba(37,99,235,0.6);
-  transition:.3s;
+.profile-cover-bg {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #1a0a2e 0%, #0d1a3a 40%, #0f0f20 100%);
+  position: relative;
 }
 
-.profile-avatar:hover{
-  transform:scale(1.05);
+/* Subtle pattern overlay on cover */
+.profile-cover-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 20% 50%, rgba(124,58,237,0.15) 0%, transparent 60%),
+    radial-gradient(circle at 80% 30%, rgba(236,72,153,0.1) 0%, transparent 50%);
 }
 
-/* USERNAME */
-.profile-header h2{
-  margin-top:12px;
-  font-size:24px;
-  font-weight:700;
+/* Small round avatar — bottom-left of cover like X */
+.profile-avatar-small {
+  position: absolute;
+  bottom: -40px;
+  left: 16px;
+  width: 82px;
+  height: 82px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #7c3aed, #ec4899);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: 800;
+  color: white;
+  border: 4px solid #0d0d14;
+  box-shadow: 0 4px 20px rgba(124,58,237,0.5);
+  z-index: 10;
+  transition: transform 0.2s;
 }
 
-/* BIO */
-.profile-header p{
-  margin-top:6px;
-  color:#94a3b8;
-  font-size:14px;
+.profile-avatar-small:hover { transform: scale(1.04); }
+
+/* =========================
+PROFILE HEADER INFO
+========================= */
+.profile-header {
+  padding: 50px 16px 0;
+  position: relative;
+}
+
+/* Follow button top-right like X */
+.profile-header-right {
+  position: absolute;
+  top: 10px;
+  right: 16px;
+}
+
+.profile-username {
+  font-size: 20px;
+  font-weight: 800;
+  color: #f0f0f5;
+  margin-bottom: 4px;
+  letter-spacing: -0.3px;
+}
+
+.profile-bio {
+  font-size: 14px;
+  color: #94a3b8;
+  line-height: 1.5;
+  margin-bottom: 14px;
+  max-width: 340px;
 }
 
 /* =========================
-STATS (TikTok Style Row)
+FOLLOW BUTTON
 ========================= */
-
-.profile-stats{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  gap:18px;
-  margin:14px 0;
-  font-size:14px;
+.follow-btn {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 25px;
+  background: #f0f0f5;
+  color: #0d0d14;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 13.5px;
+  transition: all 0.2s;
+  letter-spacing: 0.1px;
 }
 
-.profile-stats div{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  font-weight:600;
+.follow-btn:hover {
+  background: #d1d5db;
+  transform: none;
+  box-shadow: none;
 }
 
-.profile-stats div span{
-  font-size:12px;
-  color:#94a3b8;
+.follow-btn.following {
+  background: transparent;
+  color: #f0f0f5;
+  border: 1.5px solid #3a3a5a;
 }
 
-/* FOLLOW BUTTON */
-.follow-btn{
-  padding:6px 18px;
-  border:none;
-  border-radius:25px;
-  background:linear-gradient(135deg,#2563eb,#6366f1);
-  color:white;
-  cursor:pointer;
-  font-weight:600;
-  transition:all 0.3s ease;
-}
-
-.follow-btn:hover{
-  transform:scale(1.05);
-}
-
-.follow-btn.following{
-  background:#334155;
+.follow-btn.following:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+  background: rgba(239,68,68,0.08);
 }
 
 /* =========================
-TABS (TikTok style)
+STATS — TikTok style row
 ========================= */
-
-.profile-tabs{
-  display:flex;
-  justify-content:space-around;
-  margin-top:18px;
-  border-bottom:1px solid #334155;
+.profile-stats {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 18px;
 }
 
-.tab{
-  padding:10px;
-  cursor:pointer;
-  font-weight:600;
-  color:#64748b;
-  transition:.2s;
+.stat-item {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  cursor: pointer;
+  padding: 4px 0;
 }
 
-.tab:hover{
-  color:white;
+.stat-item:hover .stat-num { color: #a78bfa; }
+
+.stat-num {
+  font-size: 16px;
+  font-weight: 800;
+  color: #f0f0f5;
+  transition: color 0.2s;
 }
 
-.tab.active{
-  color:#2563eb;
-  border-bottom:3px solid #2563eb;
+.stat-label {
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.stat-divider {
+  width: 1px;
+  height: 18px;
+  background: #1e1e2e;
+  margin: 0 16px;
 }
 
 /* =========================
-POSTS SECTION
+TABS — TikTok icon style
 ========================= */
-
-.profile-posts{
-  margin-top:20px;
-  display:flex;
-  flex-direction:column;
-  gap:14px;
+.profile-tabs {
+  display: flex;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  margin: 0 -16px;
+  padding: 0 16px;
 }
 
-/* POST CARD (FIXED DARK THEME) */
-.profile-post-card{
-  background:#111827; /* 🔥 FIXED (NO MORE WHITE) */
-  padding:16px;
-  border-radius:14px;
-  border:1px solid #1f2937;
-  transition:all .25s ease;
-  animation:fadeUp .3s ease;
+.tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 10px 0 9px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  color: #4a4a6a;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
 }
 
-.profile-post-card:hover{
-  transform:translateY(-4px);
-  box-shadow:0 10px 20px rgba(0,0,0,0.5);
-  border-color:#2563eb;
-}
+.tab span { font-size: 10px; }
 
-/* TITLE */
-.profile-post-card h3{
-  font-size:17px;
-  margin-bottom:6px;
-  color:#fbbf24;
-}
+.tab:hover { color: #9ca3af; }
 
-/* BODY */
-.profile-post-card p{
-  font-size:14px;
-  color:#cbd5e1;
-  margin-bottom:8px;
+.tab.active {
+  color: #a78bfa;
+  border-bottom: 2px solid #7c3aed;
 }
 
 /* =========================
-POST META (LIKE / COMMENT)
+POSTS GRID
 ========================= */
-
-.post-meta{
-  display:flex;
-  gap:14px;
-  margin-top:8px;
-  font-size:14px;
-  align-items:center;
+.profile-posts {
+  padding: 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-/* LIKE BUTTON */
-.post-meta button{
-  background:#1f2937;
-  border:none;
-  padding:6px 10px;
-  border-radius:8px;
-  cursor:pointer;
-  color:#fbbf24;
-  font-weight:600;
-  transition:.2s;
+.profile-empty {
+  text-align: center;
+  padding: 50px 20px;
+  color: #4a4a6a;
+  font-size: 14px;
+  line-height: 1.6;
 }
 
-.post-meta button:hover{
-  background:#374151;
-  transform:scale(1.05);
+/* POST CARD */
+.profile-post-card {
+  background: #13131f;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.05);
+  transition: all .22s ease;
+  animation: fadeUp .3s ease;
+  cursor: pointer;
+  overflow: hidden;
 }
 
-/* COMMENT COUNT */
-.post-meta span{
-  color:#94a3b8;
+.profile-post-card:hover {
+  border-color: rgba(124,58,237,0.25);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+  transform: none;
+}
+
+.profile-post-img {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  display: block;
+}
+
+.profile-post-card h3 {
+  font-size: 15px;
+  margin-bottom: 5px;
+  color: #f0f0f5;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.profile-post-card > p {
+  font-size: 13.5px;
+  color: #94a3b8;
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+/* POST META */
+.post-meta {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 13px;
+  align-items: center;
+  border-top: 1px solid rgba(255,255,255,0.04);
+  padding-top: 8px;
+}
+
+.post-meta button {
+  background: transparent;
+  border: none;
+  padding: 5px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all .18s;
+}
+
+.post-meta button:hover {
+  background: rgba(124,58,237,0.1);
+  color: #a78bfa;
+  transform: none;
+  box-shadow: none;
+}
+
+.post-meta span {
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 5px 6px;
 }
 
 /* =========================
-EMPTY STATE
+ANIMATIONS
 ========================= */
-
-.profile-posts p{
-  text-align:center;
-  color:#64748b;
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-/* =========================
-ANIMATION
-========================= */
-
-@keyframes fadeUp{
-  from{
-    opacity:0;
-    transform:translateY(20px);
-  }
-  to{
-    opacity:1;
-    transform:translateY(0);
-  }
-}

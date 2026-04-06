@@ -1,33 +1,283 @@
-.notifications-page{
-max-width:650px;
-margin:0 auto;
-padding:16px;
-color:white;
+/* =========================
+NOTIFICATIONS PAGE
+========================= */
+.notifications-page {
+  max-width: 640px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: #0d0d14;
+  color: white;
+  padding-bottom: 80px;
+  animation: fadeUp 0.3s ease;
 }
 
-.notifications-page h2{
-text-align:center;
-margin-bottom:16px;
-color:#fbbf24;
+/* =========================
+HEADER
+========================= */
+.notif-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: rgba(13,13,20,0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 
-.notification-card{
-background:#1e293b;
-padding:12px 16px;
-border-radius:12px;
-margin-bottom:12px;
-cursor:pointer;
+.notif-back {
+  background: #1a1a2e;
+  border: none;
+  color: #a78bfa;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  cursor: pointer;
+  transition: all 0.18s;
+  padding: 0;
+  flex-shrink: 0;
 }
 
-.notification-card:hover{
-background:#334155;
+.notif-back:hover { background: rgba(124,58,237,0.2); transform: none; box-shadow: none; }
+
+.notif-header h2 {
+  font-size: 18px;
+  font-weight: 800;
+  color: #f0f0f5;
+  flex: 1;
+  letter-spacing: -0.3px;
 }
 
-.notification-card strong{
-color:#fbbf24;
+.notif-unread-badge {
+  background: linear-gradient(135deg, #7c3aed, #ec4899);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 20px;
+  letter-spacing: 0.3px;
 }
 
-.notification-time{
-font-size:12px;
-color:#94a3b8;
+/* =========================
+LOADING
+========================= */
+.notif-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
 }
+
+.notif-loading-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.notif-loading-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #7c3aed;
+  animation: dotBounce 1.2s infinite ease-in-out;
+}
+
+.notif-loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+.notif-loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes dotBounce {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40%           { transform: scale(1);   opacity: 1; }
+}
+
+/* =========================
+EMPTY STATE
+========================= */
+.notif-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px;
+  color: #4a4a6a;
+  text-align: center;
+}
+
+.notif-empty-icon {
+  font-size: 48px;
+  margin-bottom: 14px;
+  opacity: 0.5;
+}
+
+.notif-empty p {
+  font-size: 16px;
+  font-weight: 700;
+  color: #6b7280;
+  margin-bottom: 6px;
+}
+
+.notif-empty span {
+  font-size: 13.5px;
+  color: #4a4a6a;
+}
+
+/* =========================
+NOTIFICATION LIST
+========================= */
+.notif-list {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0;
+}
+
+/* =========================
+NOTIFICATION CARD
+========================= */
+.notification-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: background 0.18s;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  position: relative;
+  animation: fadeUp 0.25s ease both;
+}
+
+.notification-card:hover {
+  background: rgba(124,58,237,0.06);
+}
+
+.notification-card.unread {
+  background: rgba(124,58,237,0.05);
+}
+
+/* Unread indicator dot */
+.notif-dot {
+  position: absolute;
+  left: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #7c3aed;
+  flex-shrink: 0;
+}
+
+/* =========================
+ACTOR AVATAR
+========================= */
+.notif-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  font-weight: 800;
+  color: white;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: transform 0.18s;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+.notif-avatar:hover { transform: scale(1.06); }
+
+/* =========================
+NOTIFICATION CONTENT
+========================= */
+.notif-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.notif-text {
+  font-size: 14px;
+  line-height: 1.4;
+  color: #cbd5e1;
+  white-space: normal;
+}
+
+.notif-actor {
+  font-weight: 700;
+  color: #f0f0f5;
+}
+
+.notif-action {
+  color: #9ca3af;
+}
+
+.notif-time {
+  font-size: 11.5px;
+  color: #4a4a6a;
+  margin-top: 3px;
+  font-weight: 500;
+}
+
+/* =========================
+RIGHT SIDE
+========================= */
+.notif-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.notif-type-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+/* Follow back button */
+.notif-follow-btn {
+  background: #f0f0f5;
+  color: #0d0d14;
+  border: none;
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s;
+  white-space: nowrap;
+  letter-spacing: 0.2px;
+}
+
+.notif-follow-btn:hover {
+  background: #d1d5db;
+  transform: none;
+  box-shadow: none;
+}
+
+.notif-follow-btn.following {
+  background: transparent;
+  color: #9ca3af;
+  border: 1.5px solid #3a3a5a;
+}
+
+.notif-follow-btn.following:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+  background: rgba(239,68,68,0.08);
+}
+
+/* =========================
+ANIMATIONS
+========================= */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
