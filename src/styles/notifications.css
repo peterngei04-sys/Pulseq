@@ -1,0 +1,33 @@
+.notifications-page{
+max-width:650px;
+margin:0 auto;
+padding:16px;
+color:white;
+}
+
+.notifications-page h2{
+text-align:center;
+margin-bottom:16px;
+color:#fbbf24;
+}
+
+.notification-card{
+background:#1e293b;
+padding:12px 16px;
+border-radius:12px;
+margin-bottom:12px;
+cursor:pointer;
+}
+
+.notification-card:hover{
+background:#334155;
+}
+
+.notification-card strong{
+color:#fbbf24;
+}
+
+.notification-time{
+font-size:12px;
+color:#94a3b8;
+}

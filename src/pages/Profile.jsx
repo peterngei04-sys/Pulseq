@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { useParams } from "react-router-dom";
-import "../styles/global.css";
-
+import "../styles/globale.css";
+import "../styles/profile.css";                        
 export default function Profile() {
   const { id } = useParams();
 

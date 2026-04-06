@@ -1,10 +1,10 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { useNavigate } from "react-router-dom";
+import { uploadImage } from "../utils/imageUpload";
 import "../styles/globale.css";
 import "../styles/feed.css";
-import { uploadImage } from "../utils/imageUpload";
-                        
+                                                 
 export default function Feed() {
 
 const navigate = useNavigate();
@@ -25,13 +25,7 @@ const [replyText, setReplyText] = useState("");
 
 const [newTitle, setNewTitle] = useState("");
 const [newBody, setNewBody] = useState("");
-
-/* ---- IMAGE STATE (NEW) ---- */
-const [newImage, setNewImage] = useState(null);         // raw File object
-const [imagePreview, setImagePreview] = useState(null); // base64 preview URL
-const [uploading, setUploading] = useState(false);      // upload in-progress flag
-const imageInputRef = useRef(null);                     // hidden file input ref
-
+const [newImage, setNewImage] = useState(null);
 const [search, setSearch] = useState("");
 const [toast, setToast] = useState(null);
 const [isGuest, setIsGuest] = useState(false);
@@ -71,109 +65,6 @@ setTimeout(() => {
 setToast(null);
 },3000);
 
-};
-
-
-/* ===============================
-IMAGE COMPRESSION (NEW)
-Squishes any image down to ≤ 100 KB
-using a canvas loop so Supabase free
-tier storage stays happy.
-================================ */
-
-const compressImage = (file, maxKB = 100) => {
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        let { width, height } = img;
-
-        /* Scale down large images first */
-        const MAX_DIM = 1200;
-        if (width > MAX_DIM || height > MAX_DIM) {
-          if (width > height) {
-            height = Math.round((height * MAX_DIM) / width);
-            width = MAX_DIM;
-          } else {
-            width = Math.round((width * MAX_DIM) / height);
-            height = MAX_DIM;
-          }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, width, height);
-
-        /* Reduce quality until file is under maxKB */
-        let quality = 0.9;
-        const tryCompress = () => {
-          canvas.toBlob(
-            (blob) => {
-              if (blob.size <= maxKB * 1024 || quality <= 0.1) {
-                /* Convert blob → File so uploadImage works */
-                const compressed = new File([blob], file.name, {
-                  type: "image/jpeg",
-                  lastModified: Date.now(),
-                });
-                resolve(compressed);
-              } else {
-                quality -= 0.1;
-                tryCompress();
-              }
-            },
-            "image/jpeg",
-            quality
-          );
-        };
-
-        tryCompress();
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  });
-};
-
-
-/* ===============================
-HANDLE IMAGE PICK (NEW)
-Shows preview + stores compressed file
-================================ */
-
-const handleImagePick = async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  /* Only allow images */
-  if (!file.type.startsWith("image/")) {
-    showToast("Please select an image file");
-    return;
-  }
-
-  showToast("Compressing image...");
-  const compressed = await compressImage(file, 100);
-
-  /* Generate preview */
-  const reader = new FileReader();
-  reader.onload = (ev) => setImagePreview(ev.target.result);
-  reader.readAsDataURL(compressed);
-
-  setNewImage(compressed);
-  showToast(`Image ready (${Math.round(compressed.size / 1024)} KB)`);
-};
-
-
-/* ===============================
-CLEAR IMAGE (NEW)
-================================ */
-
-const clearImage = () => {
-  setNewImage(null);
-  setImagePreview(null);
-  if (imageInputRef.current) imageInputRef.current.value = "";
 };
 
 
@@ -228,7 +119,6 @@ const { data, error } = await supabase
 id,
 title,
 body,
-image_url,
 created_at,
 user_id,
 profiles(username),
@@ -300,7 +190,7 @@ navigate("/login");
 };
 
 /* ===============================
-CREATE POST  (UPGRADED — image support)
+CREATE POST
 ================================ */
 
 const handleCreatePost = async (e) => {
@@ -312,35 +202,29 @@ const handleCreatePost = async (e) => {
     return;
   }
 
-  if (!newTitle.trim() || !newBody.trim()) {
-    showToast("Title and body cannot be empty");
+  if (!newTitle.trim() && !newBody.trim() && !newImage) {
+    showToast("Post cannot be empty");
     return;
   }
 
-  setUploading(true);
+  let imageUrl = null;
 
-  /* Upload image if one was selected */
-  let image_url = null;
   if (newImage) {
-    showToast("Uploading image...");
-    image_url = await uploadImage(newImage);
-    if (!image_url) {
-      showToast("Image upload failed — check bucket policy");
-      setUploading(false);
+    imageUrl = await uploadImage(newImage);
+    if (!imageUrl) {
+      showToast("Failed to upload image");
       return;
     }
   }
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("posts")
     .insert({
       title: newTitle,
       body: newBody,
-      image_url,           // null when no image selected
       user_id: session.user.id,
+      image_url: imageUrl, // <-- save image URL in posts table
     });
-
-  setUploading(false);
 
   if (error) {
     console.log("Post insert error:", error);
@@ -351,11 +235,10 @@ const handleCreatePost = async (e) => {
   showToast("Post created!");
   setNewTitle("");
   setNewBody("");
-  clearImage();
+  setNewImage(null);
   setShowModal(false);
   fetchPosts();
 };
-
 /* ===============================
 DELETE POST
 ================================ */
@@ -509,7 +392,7 @@ https://pulseq-blue.vercel.app/post/${post.id}
 Join the community 🚀`;
 
   navigator.clipboard.writeText(shareText);
-  showToast("Share message copied!");
+  showToast("Share message copied!"); // optional toast instead of alert
 };
 /* ===============================
 SHARE POST
@@ -679,7 +562,7 @@ Welcome {profile?.username || "Guest"}
 <div
 className="profile-btn"
 onClick={()=>navigate(`/profile/${session.user.id}`)}
->        
+>	
 {profile?.username
 ? profile.username.charAt(0).toUpperCase()
 :"👤"}
@@ -762,26 +645,6 @@ style={{cursor:"pointer"}}
 {post.body}
 </p>
 
-{/* POST IMAGE (NEW) — only renders when image_url exists */}
-{post.image_url && (
-  <div className="post-image-wrapper">
-    <img
-      src={post.image_url}
-      alt="Post attachment"
-      className="post-image"
-      loading="lazy"
-      style={{
-        width: "100%",
-        maxHeight: "360px",
-        objectFit: "cover",
-        borderRadius: "8px",
-        marginTop: "10px",
-        marginBottom: "4px",
-        display: "block"
-      }}
-    />
-  </div>
-)}
 
 <div className="card-actions">
 
@@ -916,73 +779,18 @@ value={newBody}
 onChange={(e)=>setNewBody(e.target.value)}
 required
 />
-
-{/* IMAGE PICKER (NEW) */}
-<div className="image-picker-row" style={{ marginTop: "10px" }}>
-
-  {/* Hidden real file input */}
-  <input
-    ref={imageInputRef}
-    type="file"
-    accept="image/*"
-    style={{ display: "none" }}
-    onChange={handleImagePick}
-  />
-
-  {/* Visible trigger button */}
-  <button
-    type="button"
-    className="action-btn"
-    style={{ fontSize: "14px", padding: "8px 14px" }}
-    onClick={() => imageInputRef.current?.click()}
-  >
-    📷 {newImage ? "Change Image" : "Add Image"}
-  </button>
-
-  {/* Remove image */}
-  {newImage && (
-    <button
-      type="button"
-      className="action-btn"
-      style={{ fontSize: "13px", padding: "8px 10px", marginLeft: "8px" }}
-      onClick={clearImage}
-    >
-      ✕ Remove
-    </button>
-  )}
-
-</div>
-
-{/* IMAGE PREVIEW (NEW) */}
-{imagePreview && (
-  <div style={{ marginTop: "10px" }}>
-    <img
-      src={imagePreview}
-      alt="Preview"
-      style={{
-        width: "100%",
-        maxHeight: "200px",
-        objectFit: "cover",
-        borderRadius: "8px",
-        border: "1px solid rgba(255,255,255,0.1)"
-      }}
-    />
-    <p style={{ fontSize: "11px", opacity: 0.5, marginTop: "4px", textAlign: "right" }}>
-      {newImage ? `${Math.round(newImage.size / 1024)} KB` : ""}
-    </p>
-  </div>
-)}
-
-<button type="submit" disabled={uploading}>
-  {uploading ? "Posting..." : "Post"}
+<input
+  type="file"
+  accept="image/*"
+  onChange={(e) => setNewImage(e.target.files[0])}
+/>
+<button type="submit">
+Post
 </button>
 
 <span
 className="close-modal"
-onClick={()=>{
-  setShowModal(false);
-  clearImage();
-}}
+onClick={()=>setShowModal(false)}
 >
 Cancel
 </span>

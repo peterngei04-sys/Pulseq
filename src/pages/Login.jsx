@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 import { useNavigate } from "react-router-dom";
-
+import "../styles/auth.css";
+                      
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

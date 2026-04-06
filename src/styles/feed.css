@@ -1,0 +1,279 @@
+.feed-wrapper{
+max-width:700px;
+margin:auto;
+padding:20px;
+}
+
+.top-header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:20px;
+}
+
+.profile-btn{
+width:36px;
+height:36px;
+background:#6366f1;
+display:flex;
+align-items:center;
+justify-content:center;
+border-radius:50%;
+cursor:pointer;
+font-weight:bold;
+}
+
+.search-bar{
+display:flex;
+gap:10px;
+margin-bottom:20px;
+}
+
+/* ✅ FIXED SEARCH INPUT (logo + icon restored) */
+.search-bar input{
+flex:1;
+
+background: 
+url('/pulseqsmall.png') no-repeat 10px center,
+url('/search-icon.png') no-repeat right 10px center;
+
+background-size:20px 20px, 16px 16px;
+
+padding-left:40px;
+padding-right:30px;
+
+border-radius:20px;
+border:none;
+
+height:36px;
+font-size:14px;
+
+color:white;
+background-color:#25307a;
+
+transition:0.2s;
+}
+
+.search-bar input::placeholder{
+color:#bbb;
+}
+
+.search-bar input:focus{
+outline:none;
+background-color:#3040a0;
+box-shadow:0 0 8px rgba(74,108,255,0.5);
+}
+
+/* POST CARD */
+
+.modern-card{
+background:#111827;
+padding:18px;
+border-radius:12px;
+margin-bottom:14px;
+border:1px solid #1f2937;
+transition:.25s;
+}
+
+.modern-card:hover{
+transform:translateY(-3px);
+box-shadow:0 10px 20px rgba(0,0,0,.4);
+}
+
+.card-top{
+display:flex;
+align-items:center;
+gap:10px;
+margin-bottom:8px;
+}
+
+.avatar{
+width:32px;
+height:32px;
+border-radius:50%;
+background:#6366f1;
+display:flex;
+align-items:center;
+justify-content:center;
+font-weight:bold;
+cursor:pointer;
+}
+
+.username{
+font-size:14px;
+color:#9ca3af;
+}
+
+.modern-title{
+font-size:18px;
+margin-bottom:5px;
+}
+
+.modern-body{
+color:#cbd5e1;
+margin-bottom:10px;
+}
+
+/* ACTIONS */
+
+.card-actions{
+display:flex;
+gap:10px;
+}
+
+.action-btn{
+background:#1f2937;
+padding:6px 10px;
+border-radius:8px;
+cursor:pointer;
+transition:0.2s;
+}
+
+.action-btn:hover{
+background:#374151;
+}
+
+/* FAB */
+
+.fab{
+position:fixed;
+bottom:30px;
+right:30px;
+width:55px;
+height:55px;
+border-radius:50%;
+background:#6366f1;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:26px;
+cursor:pointer;
+box-shadow:0 10px 20px rgba(0,0,0,.5);
+transition:0.2s;
+}
+
+.fab:hover{
+transform:scale(1.1);
+}
+
+/* NOTIFICATION BUTTON */
+
+.notification-bell{
+position:fixed;
+bottom:25px;
+left:25px;
+background:#111;
+width:55px;
+height:55px;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:22px;
+cursor:pointer;
+box-shadow:0 6px 20px rgba(0,0,0,0.3);
+}
+.create-post {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 20px;
+}
+
+.create-post input,
+.create-post textarea {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.create-post button {
+  padding: 10px;
+  background: #6366f1;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.post-image-preview {
+  width: 100%;
+  max-height: 400px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-top: 10px;
+}
+.feed {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 20px;
+}
+
+.post-card {
+  background: #1f2937;
+  color: white;
+  padding: 15px;
+  border-radius: 12px;
+}
+
+.post-card img.post-image {
+  width: 100%;
+  max-height: 400px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-top: 10px;
+}
+/* ===========================
+MODAL
+=========================== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999; /* ensures modal is on top */
+}
+
+.modal-content {
+  background: #111827;
+  padding: 20px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  color: #e5e7eb;
+  z-index: 10000;
+}
+
+.modal-content input,
+.modal-content textarea {
+  width: 100%;
+  padding: 8px;
+  border-radius: 8px;
+  border: none;
+  background-color: #1f2937;
+  color: white;
+}
+
+.modal-content button {
+  padding: 8px 12px;
+  background-color: #6366f1;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.close-modal {
+  color: #f87171;
+  cursor: pointer;
+  text-align: center;
+}

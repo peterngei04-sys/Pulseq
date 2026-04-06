@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 import { useNavigate } from "react-router-dom";
-
+import "../styles/auth.css";
 export default function Signup() {
 
   const [email, setEmail] = useState("");

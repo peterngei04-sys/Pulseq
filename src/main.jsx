@@ -1,9 +1,9 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
-import "./styles/global.css";
+import "./styles/globale.css";
 import { supabase } from "./lib/supabase";
-
+                                               
 async function startApp() {
 
   // Restore session before rendering app

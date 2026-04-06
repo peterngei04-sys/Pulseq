@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { useNavigate } from "react-router-dom";
-import "../styles/global.css";
-
+import "../styles/globale.css";
+ import "../styles/notifications.css";                        
 export default function Notifications() {
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
