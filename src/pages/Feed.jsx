@@ -483,25 +483,17 @@ SHARE POST
 const handleShare = async (post, e) => {
   if (e) e.stopPropagation();
 
-  // 👇 THIS is the magic change
-  const link = window.location.origin + "/api/post/" + post.id;
+  // This link points to your new Vercel API
+  const link = `${window.location.origin}/api/share?id=${post.id}`;
 
-  const message =
-    "Check this out on PulseQ!\n\n\"" +
-    post.title +
-    "\"\n\n" +
-    link;
+  const message = `Check this out on PulseQ!\n\n"${post.title}"\n\n${link}`;
 
   try {
     if (navigator.share) {
-      await navigator.share({
-        title: post.title,
-        text: message,
-        url: link,
-      });
+      await navigator.share({ title: post.title, text: post.title, url: link });
     } else {
-      await navigator.clipboard.writeText(link);
-      showToast("Share link copied");
+      await navigator.clipboard.writeText(message);
+      showToast("Share link copied!");
     }
   } catch (err) {
     console.log(err);
@@ -588,7 +580,26 @@ const ActionBar = ({ post, inDetail = false }) => (
     )}
   </div>
 );
+const ExpandableText = ({ text, limit = 150 }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
 
+  if (text.length <= limit) return <p className="modern-body">{text}</p>;
+
+  return (
+    <p className="modern-body">
+      {isExpanded ? text : `${text.substring(0, limit)}... `}
+      <span 
+        style={{ color: '#007bff', cursor: 'pointer', fontWeight: 'bold', marginLeft: '5px' }} 
+        onClick={(e) => {
+          e.stopPropagation(); // Prevent opening the post detail
+          setIsExpanded(!isExpanded);
+        }}
+      >
+        {isExpanded ? "Show Less" : "See More"}
+      </span>
+    </p>
+  );
+};
 /* ===============================
 UI
 ================================ */
@@ -706,8 +717,9 @@ return (
                 <strong>{detailPost.username}</strong> · {timeAgo(detailPost.created_at)}
               </span>
             </div>
+
             <h3 className="modern-title" style={{ padding: "0 0 8px" }}>{detailPost.title}</h3>
-            <p className="modern-body" style={{ padding: "0 0 10px" }}>{detailPost.body}</p>
+            <ExpandableText text={post.body} />
             {detailPost.image_url && (
               <div className="post-image-wrapper" style={{ margin: "0 -16px" }}>
                 <img src={detailPost.image_url} alt="Post attachment" className="post-image" />

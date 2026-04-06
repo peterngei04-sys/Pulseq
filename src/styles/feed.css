@@ -700,3 +700,12 @@ DESKTOP
   }
 }
 
+.see-more-link {
+  color: #0084ff; /* Or your theme color */
+  font-weight: bold;
+  cursor: pointer;
+  margin-left: 4px;
+}
+.see-more-link:hover {
+  text-decoration: underline;
+}
