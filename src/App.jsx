@@ -81,7 +81,7 @@ element={
 </GuestRoute>
 }
 />
-<Route path="/app/post/:id" element={<PostDetailPage />} />
+<Route path="/post/:id" element={<PostPage />} />
 <Route
 path="/login"
 element={
